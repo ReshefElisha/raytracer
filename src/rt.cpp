@@ -19,6 +19,9 @@
 #define ARR_LEN(x) (sizeof(x)/sizeof(x[0]))
 #define FP_COMP(a,b,t) (abs((a) - (b)) < (t))
 
+#ifndef M_PI
+#define M_PI 3.141592658f
+#endif
 /* ============================================================================
  * CLASSES
  * ============================================================================
@@ -39,7 +42,7 @@ public:
     {
         return vect(x + o.x, y + o.y, z + o.z);
     }
-    vect operator+=(vect o)
+    void operator+=(vect o)
     {
         *this = *this + o;
     }
@@ -184,14 +187,14 @@ struct config {
 };
 
 static config m_conf = {
-    .x_size = 512,
-    .y_size = 512,
-    .num_rays = 5,
-    .max_bounces = 5,
-    .lens_f = 50,
-    .focal_len = 50,
-    .aperture_size = 5,
-    .out_fn = std::string("out.ppm")
+    /*.x_size =        */ 512,
+    /*.y_size =        */ 512,
+    /*.num_rays =      */ 5,
+    /*.max_bounces =   */ 5,
+    /*.lens_f =        */ 50.0f,
+    /*.focal_len =     */ 50.0f,
+    /*.aperture_size = */ 0.005f,
+    /*.out_fn =        */ std::string("out.ppm")
 };
 
 #define STR_TO_PROP(st, pr) else if(prop.compare(st) == 0){ in >> conf->pr; }
@@ -235,7 +238,7 @@ static float frand() { return (float) rand() / RAND_MAX; }
 
 // random sampling from the aperture circle
 static vect rand_aperture() {
-    float r = frand() * m_conf.aperture_size, t = frand() * M_PI;
+    float r = frand() * m_conf.aperture_size, t = frand() * 2 * M_PI;
     return vect(r * cos(t), r*sin(t), m_conf.focal_len);
 }
 
@@ -256,10 +259,10 @@ static ray_t lens(vect dir, vect origin) {
     // this also assumes that camera will always face z-forward in this stage
     c.z = m_conf.focal_len;
 
-    return (ray_t) {
-        .dir = y,
-        .origin = c
-    };
+    ray_t ret;
+    ret.dir    = y;
+    ret.origin = c;
+    return ret;
 
 }
 
